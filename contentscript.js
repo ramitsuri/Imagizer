@@ -2,7 +2,7 @@
 var token;
 var tagsArray = [];
 GetAccessToken();
-GetImageLinks();
+
 var taggedImages = [];
 
 
@@ -17,6 +17,7 @@ $.ajax({
     },
     success: function (data, textStatus, jQxhr) {
         token = data.access_token;
+        GetImageLinks();
     },
     error: function (jqXhr, textStatus, errorThrown) {
         console.log(errorThrown);
@@ -27,17 +28,17 @@ $.ajax({
 function GetImageLinks(){
 var images = document.getElementsByTagName("img");
 var srcArray = [];
-var pattern = new RegExp(".*\.((jpg|gif|png)$)");
+var pattern = new RegExp(".*\.((jpg|gif|png|mp4)$)");
 for (var i = 0; i < images.length; i++) {
     if (pattern.test(images[i].src)) {
         //srcArray.push(images[i].src);
         //console.log(images[i].src);
-        GetTags(images[i].src)
+        GetTags(images[i].parentElement, images[i].src)
     }
 }
 }
 
-function GetTags(imgUrl) {
+function GetTags(parentElement, imgUrl) {
     var tags = [];
     var probs = [];
     var probsSorted = [];
@@ -60,9 +61,10 @@ function GetTags(imgUrl) {
             tagProbPairs = tagProbPairs.sort(function(a,b){
         return b.key - a.key;
     }).slice(0,3);  
-    var taggedImage = new TaggedImage(imgUrl, tagProbPairs);    
+    var taggedImage = new TaggedImage(parentElement, imgUrl, tagProbPairs);    
     taggedImages.push(taggedImage);
-    console.log(taggedImage); 
+    //console.log(taggedImage);
+    ModifyHTML(taggedImage); 
         },
         error: function (jqXhr, textStatus, errorThrown) {
             console.log(errorThrown);
@@ -70,8 +72,29 @@ function GetTags(imgUrl) {
         beforeSend: function (xhr, settings) { xhr.setRequestHeader('Authorization', 'Bearer ' + token); }
     });
    
-            
+      class TaggedImage{
+    constructor(parent, imageUrl, tagProbPair){
+        this.parent = parent;
+        this.imageUrl = imageUrl;
+        this.tagProbPair = tagProbPair;
+    }      
+      }
 }
 
+function ModifyHTML(taggedImage){
+    //console.log(taggedImage.parent.outerHTML);
+    var divToAdd="<div>";
+    var i=0;
+    taggedImage.tagProbPair.forEach(function(element) {
+        i=i+1;
+        divToAdd = divToAdd + element.value;
+        if(i!=3)
+            divToAdd = divToAdd + ", ";
+         
+    }, this);
+    divToAdd = divToAdd + "</div>";
+    taggedImage.parent.outerHTML = taggedImage.parent.outerHTML + divToAdd;
+    //console.log(taggedImage.parent.outerHTML);
+}
 
 //console.log(srcArray);

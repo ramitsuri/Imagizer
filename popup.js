@@ -3,9 +3,9 @@ function clickHandler(e) {
         console.log(response);
     });
     
-    /* var gImageSearch;
+     var gImageSearch;
 		var pageNumber=0;		
-    google.load('search', '1');*/
+    google.load('search', '1');
 }
 
 document.addEventListener('DOMContentLoaded', function () {
